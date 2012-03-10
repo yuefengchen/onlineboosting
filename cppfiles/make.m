@@ -1,0 +1,3 @@
+mex intimage.cpp
+mex detection.cpp
+mex update.cpp
