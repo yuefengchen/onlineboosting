@@ -11,17 +11,18 @@ global selectors;
 global alpha;
 
 load faceocc_gt.mat;
-parameter.numselectors = 10;
+load haarmat.mat;
+parameter.numselectors = 20;
 parameter.overlap = 0.99;
 parameter.searchfactor = 2;
 parameter.minfactor = 0.001;
 parameter.patch = faceocc_gt(1,:);
 parameter.iterationinit = 0;
-parameter.numweakclassifiers = parameter.numselectors * 40;
+parameter.numweakclassifiers = parameter.numselectors * 10;
 parameter.minarea = 9;
 parameter.imagewidth = 352;
 parameter.imageheight = 288;
-parameter.imdirformat = './/faceocc//imgs//img%05d.png';
+parameter.imdirformat = './/data//faceocc//imgs//img%05d.png';
 parameter.imgstart = 0;
 parameter.imgend = 885;
 objectlocation = parameter.patch;
@@ -30,9 +31,15 @@ objectlocation = parameter.patch;
 
 I = imread(num2str(parameter.imgstart, parameter.imdirformat));
 imshow(I);
-sumimagedata = interimagebymatlab(I);
+sumimagedata = intimage(I);
+
 % initilize the posgaussian and neggaussian
-init_strongclassifier(parameter.patch);
+for i = 1:parameter.numselectors
+    generaterandomfeaturebymat(i,200, haarmat(1+200*(i-1):200*i,:));
+end
+
+% initilize the posgaussian and neggaussian
+%init_strongclassifier(parameter.patch);
 % generate the patches in the search region
 patches = generatepatches(parameter.patch, parameter.searchfactor, parameter.overlap);
 % first initilize the weakclassifiers
@@ -43,28 +50,19 @@ numofpatches = size(patches, 1);
 
 for  i = 1:50
     
-    update(sumimagedata, parameter.patch, 1, 1.0);
-    update(sumimagedata, patches(numofpatches - 3,:), -1, 1.0);
-    update(sumimagedata, parameter.patch, 1, 1.0);
-    update(sumimagedata, patches(numofpatches - 2,:), -1, 1.0);
-    update(sumimagedata, parameter.patch, 1, 1.0);
-    update(sumimagedata, patches(numofpatches - 1,:), -1, 1.0);
-    update(sumimagedata, parameter.patch, 1, 1.0);
-    update(sumimagedata, patches(numofpatches,:),  -1, 1.0);
-    
-    %{
-    updatestrongclassifier(sumimagedata, parameter.patch, 1, 1.0);
-    updatestrongclassifier(sumimagedata, patches(numofpatches - 3,:), -1, 1.0);
-    updatestrongclassifier(sumimagedata, parameter.patch, 1, 1.0);
-    updatestrongclassifier(sumimagedata, patches(numofpatches - 2,:), -1, 1.0);
-    updatestrongclassifier(sumimagedata, parameter.patch, 1, 1.0);
-    updatestrongclassifier(sumimagedata, patches(numofpatches - 1,:), -1, 1.0);
-    updatestrongclassifier(sumimagedata, parameter.patch, 1, 1.0);
-    updatestrongclassifier(sumimagedata, patches(numofpatches,:),  -1, 1.0);
-    %}
+    updatenopossion(sumimagedata, parameter.patch, 1, 1.0);
+    updatenopossion(sumimagedata, patches(numofpatches - 3,:), -1, 1.0);
+    updatenopossion(sumimagedata, parameter.patch, 1, 1.0);
+    updatenopossion(sumimagedata, patches(numofpatches - 2,:), -1, 1.0);
+    updatenopossion(sumimagedata, parameter.patch, 1, 1.0);
+    updatenopossion(sumimagedata, patches(numofpatches - 1,:), -1, 1.0);
+    updatenopossion(sumimagedata, parameter.patch, 1, 1.0);
+    updatenopossion(sumimagedata, patches(numofpatches,:),  -1, 1.0);
+   
 end
 flag = 1;
 confidence = [];
+selector_perframe = selectors;
 for imgno = parameter.imgstart+1:parameter.imgend
     if mod(imgno , 10) == 0 
         imgno
@@ -104,14 +102,14 @@ for imgno = parameter.imgstart+1:parameter.imgend
     patches = generatepatches(parameter.patch, parameter.searchfactor, parameter.overlap);
     numofpatches = size(patches, 1);
     
-    update(sumimagedata, parameter.patch, 1, 1.0);
-    update(sumimagedata, patches(numofpatches - 3,:), -1, 1.0);
-    update(sumimagedata, parameter.patch, 1, 1.0);
-    update(sumimagedata, patches(numofpatches - 2,:), -1, 1.0);
-    update(sumimagedata, parameter.patch, 1, 1.0);
-    update(sumimagedata, patches(numofpatches - 1,:), -1, 1.0);
-    update(sumimagedata, parameter.patch, 1, 1.0);
-    update(sumimagedata, patches(numofpatches,:),     -1, 1.0);
+    updatenopossion(sumimagedata, parameter.patch, 1, 1.0);
+    updatenopossion(sumimagedata, patches(numofpatches - 3,:), -1, 1.0);
+    updatenopossion(sumimagedata, parameter.patch, 1, 1.0);
+    updatenopossion(sumimagedata, patches(numofpatches - 2,:), -1, 1.0);
+    updatenopossion(sumimagedata, parameter.patch, 1, 1.0);
+    updatenopossion(sumimagedata, patches(numofpatches - 1,:), -1, 1.0);
+    updatenopossion(sumimagedata, parameter.patch, 1, 1.0);
+    updatenopossion(sumimagedata, patches(numofpatches,:),     -1, 1.0);
     
     %{
     updatestrongclassifier(sumimagedata, parameter.patch, 1, 1.0);
@@ -123,6 +121,8 @@ for imgno = parameter.imgstart+1:parameter.imgend
     updatestrongclassifier(sumimagedata, parameter.patch, 1, 1.0);
     updatestrongclassifier(sumimagedata, patches(numofpatches,:),  -1, 1.0);
     %}
+    
+    selector_perframe = [selector_perframe, selectors];
     pause(0.00040);
 end
 onlboost_faceoc = objectlocation;

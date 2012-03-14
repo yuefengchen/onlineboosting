@@ -10,13 +10,13 @@ global parameter;
 global selectors;
 global alpha;
 load faceocc_gt.mat;
-parameter.numselectors = 20;
+parameter.numselectors = 10;
 parameter.overlap = 0.99;
 parameter.searchfactor = 2;
 parameter.minfactor = 0.001;
 parameter.patch = faceocc_gt(1,:);
 parameter.iterationinit = 0;
-parameter.numweakclassifiers = parameter.numselectors * 10;
+parameter.numweakclassifiers = parameter.numselectors * 40;
 parameter.minarea = 9;
 parameter.imagewidth = 352;
 parameter.imageheight = 288;
@@ -29,7 +29,7 @@ objectlocation = parameter.patch;
 
 I = imread(num2str(parameter.imgstart, parameter.imdirformat));
 imshow(I);
-sumimagedata = intimage(I);
+sumimagedata = interimagebymatlab(I);
 % initilize the posgaussian and neggaussian
 init_strongclassifier(parameter.patch);
 % generate the patches in the search region
@@ -68,8 +68,19 @@ for  i = 1:50
     
     patchesforupdate(8,:) = patches(numofpatches ,:);
     labelforupdate(8) = -1;
-    updatesparse(sumimagedata, patchesforupdate, labelforupdate, importance);
+    updatesparserealboost(sumimagedata, patchesforupdate, labelforupdate, importance);
    
+    
+    %{
+    updatestrongclassifier(sumimagedata, parameter.patch, 1, 1.0);
+    updatestrongclassifier(sumimagedata, patches(numofpatches - 3,:), -1, 1.0);
+    updatestrongclassifier(sumimagedata, parameter.patch, 1, 1.0);
+    updatestrongclassifier(sumimagedata, patches(numofpatches - 2,:), -1, 1.0);
+    updatestrongclassifier(sumimagedata, parameter.patch, 1, 1.0);
+    updatestrongclassifier(sumimagedata, patches(numofpatches - 1,:), -1, 1.0);
+    updatestrongclassifier(sumimagedata, parameter.patch, 1, 1.0);
+    updatestrongclassifier(sumimagedata, patches(numofpatches,:),  -1, 1.0);
+    %}
 end
 flag = 1;
 confidence = [];
@@ -137,9 +148,9 @@ for imgno = parameter.imgstart+1:parameter.imgend
     
     patchesforupdate(8,:) = patches(numofpatches ,:);
     labelforupdate(8) = -1;
-    updatesparse(sumimagedata, patchesforupdate, labelforupdate, importance);
+    updatesparserealboost(sumimagedata, patchesforupdate, labelforupdate, importance);
     
-   
+    %pause;
 end
 onspboost_faceocc_gt = objectlocation;
 onspboost_faceocc_confidence = confidence;

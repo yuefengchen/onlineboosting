@@ -11,17 +11,18 @@ function   generaterandomfeature(selectorindex, featurenum, patchsize, min_area)
     haarfeature(selectorindex).posgaussian = [];
     haarfeature(selectorindex).neggaussian = [];
     
-    patchsizeheight = patchsize(2);
-    patchsizewidth = patchsize(1);
+    patchsizeheight = patchsize(4);
+    patchsizewidth = patchsize(3);
     for i = 1:featurenum
         vaild = false;
         while vaild ~= true
-            y0 = randi(floor(patchsizeheight));
-            x0 = randi(floor(patchsizewidth));
+            % modify now
+            y0 = randi(floor(patchsizeheight)) - 1 ;
+            x0 = randi(floor(patchsizewidth)) - 1;
             %colsinblock = floor((1 - sqrt(1 - rand())) * patchsizewidth);
             %rowsinblock = floor((1 - sqrt(1 - rand())) * patchsizeheight);
             colsinblock = floor(rand() * patchsizewidth  / 5);
-            rowsinblock = floor(rand() * patchsizeheight /5);
+            rowsinblock = floor(rand() * patchsizeheight / 5);
             %col = randi(patchsize(1));
             prob = rand();
             if prob <= 0.2

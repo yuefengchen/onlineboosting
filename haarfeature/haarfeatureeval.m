@@ -3,8 +3,14 @@ function haarfeatureeval( selectorindex, sumimagedata, patch)
     x_offset = patch(1);
     y_offset = patch(2);
     location = haarfeature(selectorindex).location;
-    location(:,1) = location(:,1) + x_offset;
-    location(:,2) = location(:,2) + y_offset;
+    location(:,1) = location(:,1) + x_offset ;
+    location(:,2) = location(:,2) + y_offset ;
+  %  errrow = find(location(:,2) + location(:,4) > size(sumimagedata, 1));
+ %   errcol = find(location(:,1) + location(:,3) > size(sumimagedata, 2));
+ %   if(length(errrow) ~= 0 | length(errcol) ~= 0 )
+ %       disp('error')
+ %       save error.mat;
+  %  end
     topleft  = sub2ind(size(sumimagedata), location(:,2), location(:,1));
     botright = sub2ind(size(sumimagedata), location(:,2) + location(:,4), location(:, 1) + location(:, 3));
     topright = sub2ind(size(sumimagedata), location(:,2), location(:,1) + location(:,3));

@@ -10,6 +10,8 @@ global parameter;
 global selectors;
 global alpha;
 load faceocc_gt.mat;
+load haarmat.mat;
+
 parameter.numselectors = 20;
 parameter.overlap = 0.99;
 parameter.searchfactor = 2;
@@ -29,9 +31,11 @@ objectlocation = parameter.patch;
 
 I = imread(num2str(parameter.imgstart, parameter.imdirformat));
 imshow(I);
-sumimagedata = intimage(I);
+sumimagedata = interimagebymatlab(I);
 % initilize the posgaussian and neggaussian
-init_strongclassifier(parameter.patch);
+for i = 1:parameter.numselectors
+    generaterandomfeaturebymat(i,200, haarmat(1+200*(i-1):200*i,:));
+end
 % generate the patches in the search region
 patches = generatepatches(parameter.patch, parameter.searchfactor, parameter.overlap);
 % first initilize the weakclassifiers
@@ -70,9 +74,13 @@ for  i = 1:50
     labelforupdate(8) = -1;
     updatesparse(sumimagedata, patchesforupdate, labelforupdate, importance);
    
+    
+   
 end
 flag = 1;
 confidence = [];
+selector_perframe = selectors;
+
 for imgno = parameter.imgstart+1:parameter.imgend
     if mod(imgno , 10) == 0 
         imgno
@@ -139,7 +147,8 @@ for imgno = parameter.imgstart+1:parameter.imgend
     labelforupdate(8) = -1;
     updatesparse(sumimagedata, patchesforupdate, labelforupdate, importance);
     
-   
+    selector_perframe = [ selector_perframe ,selectors];
+    %pause;
 end
 onspboost_faceocc_gt = objectlocation;
 onspboost_faceocc_confidence = confidence;

@@ -5,18 +5,20 @@ function  updatesparse( sumimagedata, patch, label, importance)
     global alpha;
     numofpatches = size(patch, 1);
     numofweakclassifier = parameter.numweakclassifiers;
+    weight = zeros(numofweakclassifier, numofpatches, parameter.numselectors);
     for i = 1:parameter.numselectors
         % for each weakclassifiers update 
         % possion sampling
         % calculate the haarfeature value for each weakclassifier
         for j = 1: numofpatches
             haarfeatureeval(i, sumimagedata, patch(j,:));
+            weight(:, j,i) = haarfeature(i).weightvalue;
             if label(j) == 1
                 % pos update
-                posgaussiandistributionupdate(i, haarfeature(i).weightvalue, parameter.minfactor);
+                posgaussiandistributionupdate(i, weight(:, j, i), parameter.minfactor);
             else
                 % neg update
-                neggaussiandistributionupdate(i, haarfeature(i).weightvalue, parameter.minfactor);
+                neggaussiandistributionupdate(i, weight(:, j, i), parameter.minfactor);
             end
         end
         
@@ -25,8 +27,8 @@ function  updatesparse( sumimagedata, patch, label, importance)
         W = zeros(numofpatches, numofpatches);
         for j = 1: numofpatches
             W(j,j) = importance(j);
-            haarfeatureeval(i, sumimagedata, patch(j,:));
-            classid = classify(i, haarfeature(i).weightvalue);
+            %haarfeatureeval(i, sumimagedata, patch(j,:));
+            classid = classify(i, weight(:, j, i));
             indwrong = find(classid ~=  label(j));
             indcorrect = find(classid ==  label(j));
         
@@ -44,8 +46,8 @@ function  updatesparse( sumimagedata, patch, label, importance)
         param.pos = true;
         param.L = length(label);
        
-        
-        c = mexLasso(W*label, W*A, param);
+        c = mexLasso(label, A, param);
+        %c = mexLasso(W*label, W*A, param);
         c = full(c);
         [maxvalue, selectclassifierindex] = max(c(1:numofweakclassifier));
         selectors(i) = (selectclassifierindex);
@@ -57,8 +59,8 @@ function  updatesparse( sumimagedata, patch, label, importance)
         end
         indcorrect = find(A(:,selectclassifierindex) == label);
         indwrong = find(A(:,selectclassifierindex) ~= label);
-        importance(indcorrect) = importance(indcorrect) * sqrt(minerror/(1 - minerror));
-        importance(indwrong) = importance( indwrong) * sqrt((1 - minerror)/minerror);
+       % importance(indcorrect) = importance(indcorrect) * sqrt(minerror/(1 - minerror));
+       % importance(indwrong) = importance( indwrong) * sqrt((1 - minerror)/minerror);
        
     end
 end
